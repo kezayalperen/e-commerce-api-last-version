@@ -36,7 +36,7 @@ public class MessageProducer {
     // verileri kafkaya gönderiyoruz.
 
     public void send(String term){
-        ProducerRecord<String,String> rec = new ProducerRecord<String, String>("searchv2", term);
+        ProducerRecord<String,String> rec = new ProducerRecord<String, String>("search-analysis-stream", term);
         producer.send(rec);
     }
 

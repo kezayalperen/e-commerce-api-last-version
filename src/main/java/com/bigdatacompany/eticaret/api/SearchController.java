@@ -23,42 +23,77 @@ public class SearchController {
     // With the map operation, we keep the data from postman in the term field.
 
     @GetMapping("/search")
-    public void searchIndex(@RequestParam String term){
+    public void searchIndex(@RequestParam String term) {
 
         // Şehir bilgilerini random olarak atamak için arraylist oluşturup, random kütüphanesi kullanarak indexlerine göre çağırıyoruz.
         // In order to assign city information randomly, we create an arraylist and call it according to indexes using the random library.
 
-        List<String> cities = Arrays.asList("Ankara","İstanbul","Sivas","İzmir","Manisa","Kayseri","Trabzon","Konya","Uşak","Adana","Niğde");
+        List<String> cities = Arrays.asList("Ankara", "İstanbul", "Sivas", "İzmir", "Manisa", "Kayseri", "Trabzon", "Konya", "Uşak", "Adana", "Niğde");
 
-        Random random = new Random();
-
-        int i = random.nextInt(cities.size());
-
-        // Gelen verilerin ne zaman gönderildiğini TimeStamp kullanarak bildiriyoruz.
-        // We report when the incoming data is sent using TimeStamp.
+        List<String> products = Arrays.asList("PC", "Monitör", "klavye", "Mouse", "Ekran Kartı", "İşlemci", "HardDisk", "Kasa", "Cep Telefonu", "Mikrofon", "Kamera");
 
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
-        // Verileri JSON dosyasına çeviriyoruz.
-        // We convert the data to JSON file.
+        while (true) {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("search",term);
-        jsonObject.put("timestamp",timestamp);
-        jsonObject.put("region",cities.get(i));
+            Random random = new Random();
 
-        // Verileri ham haliyle konsola yazdırıyoruz.
-        // We print the data in its raw form to the console.
+            int i = random.nextInt(cities.size());
 
-        // System.out.println(term+" "+timestamp+" "+cities.get(i));
+            int k = random.nextInt(products.size());
 
-        // Verileri JSON dosyası halinde konsola yazdırıyoruz.
-        // We print the data into the console as a JSON file.
+            long offset = Timestamp.valueOf("2020-07-27 02:00:00").getTime();
+            long end = Timestamp.valueOf("2020-07-27 23:59:00").getTime();
+            long diff = end - offset + 1;
+            Timestamp rand = new Timestamp(offset + (long) (Math.random() * diff));
 
-        // System.out.println(jsonObject.toJSONString());
+            // Verileri JSON dosyasına çeviriyoruz.
+            // We convert the data to JSON file.
 
-        // Verileri messageProducer üzerinden kafkaya gönderme.
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("search", products.get(k));
+            jsonObject.put("current_ts", rand.toString());
+            jsonObject.put("region", cities.get(i));
+            jsonObject.put("userid", random.nextInt(15000 - 1000) + 1000);
 
-        messageProducer.send(jsonObject.toJSONString());
+            // Verileri ham haliyle konsola yazdırıyoruz.
+            // We print the data in its raw form to the console.
+
+            // System.out.println(term+" "+timestamp+" "+cities.get(i));
+
+            // Verileri JSON dosyası halinde konsola yazdırıyoruz.
+            // We print the data into the console as a JSON file.
+
+            System.out.println(jsonObject.toJSONString());
+
+            // Verileri messageProducer üzerinden kafkaya gönderme.
+
+            messageProducer.send(jsonObject.toJSONString());
+        }
+    }
+
+    // Anlık veri analizi için oluşturduğumuz class
+
+        @GetMapping("/search/stream")
+        public void searchIndexStream(@RequestParam String term) {
+
+            // Şehir bilgilerini random olarak atamak için arraylist oluşturup, random kütüphanesi kullanarak indexlerine göre çağırıyoruz.
+            // In order to assign city information randomly, we create an arraylist and call it according to indexes using the random library.
+
+            List<String> cities = Arrays.asList("Ankara", "İstanbul", "Sivas", "İzmir", "Manisa", "Kayseri", "Trabzon", "Konya", "Uşak", "Adana", "Niğde");
+
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+                Random random = new Random();
+                int i = random.nextInt(cities.size());
+
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("search", term);
+                jsonObject.put("current_ts", timestamp.toString());
+                jsonObject.put("region", cities.get(i));
+                jsonObject.put("userid",random.nextInt(15000-1000)+1000);
+
+                messageProducer.send(jsonObject.toJSONString());
+
     }
 }
